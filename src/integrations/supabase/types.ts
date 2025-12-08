@@ -98,7 +98,7 @@ export type Database = {
           created_at: string
           description: string
           duration_days: number | null
-          employer_id: string
+          employer_id: string | null
           id: string
           is_verified: boolean | null
           status: string | null
@@ -114,7 +114,7 @@ export type Database = {
           created_at?: string
           description: string
           duration_days?: number | null
-          employer_id: string
+          employer_id?: string | null
           id?: string
           is_verified?: boolean | null
           status?: string | null
@@ -130,7 +130,7 @@ export type Database = {
           created_at?: string
           description?: string
           duration_days?: number | null
-          employer_id?: string
+          employer_id?: string | null
           id?: string
           is_verified?: boolean | null
           status?: string | null
