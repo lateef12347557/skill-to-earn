@@ -1,8 +1,10 @@
 import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, X, Zap, User, Briefcase, GraduationCap, LayoutDashboard } from "lucide-react";
+import { Menu, X, Zap, Briefcase, GraduationCap, LayoutDashboard, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/hooks/useAuth";
+import { toast } from "sonner";
 
 const navLinks = [
   { href: "/jobs", label: "Find Jobs", icon: Briefcase },
@@ -13,6 +15,14 @@ const navLinks = [
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, signOut, loading } = useAuth();
+
+  const handleSignOut = async () => {
+    await signOut();
+    toast.success("Signed out successfully");
+    navigate("/");
+  };
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-md">
@@ -52,12 +62,28 @@ export function Navbar() {
 
           {/* Auth Buttons */}
           <div className="hidden md:flex items-center gap-3">
-            <Link to="/login">
-              <Button variant="ghost">Sign In</Button>
-            </Link>
-            <Link to="/signup">
-              <Button variant="accent">Get Started</Button>
-            </Link>
+            {loading ? (
+              <div className="h-9 w-24 bg-muted animate-pulse rounded-md" />
+            ) : user ? (
+              <>
+                <span className="text-sm text-muted-foreground">
+                  {user.email}
+                </span>
+                <Button variant="ghost" onClick={handleSignOut} className="gap-2">
+                  <LogOut className="h-4 w-4" />
+                  Sign Out
+                </Button>
+              </>
+            ) : (
+              <>
+                <Link to="/auth">
+                  <Button variant="ghost">Sign In</Button>
+                </Link>
+                <Link to="/auth?mode=signup">
+                  <Button variant="accent">Get Started</Button>
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -96,16 +122,32 @@ export function Navbar() {
                 );
               })}
               <div className="flex gap-2 pt-4 border-t border-border mt-2">
-                <Link to="/login" className="flex-1">
-                  <Button variant="outline" className="w-full">
-                    Sign In
+                {user ? (
+                  <Button 
+                    variant="outline" 
+                    className="w-full gap-2" 
+                    onClick={() => {
+                      handleSignOut();
+                      setIsOpen(false);
+                    }}
+                  >
+                    <LogOut className="h-4 w-4" />
+                    Sign Out
                   </Button>
-                </Link>
-                <Link to="/signup" className="flex-1">
-                  <Button variant="accent" className="w-full">
-                    Get Started
-                  </Button>
-                </Link>
+                ) : (
+                  <>
+                    <Link to="/auth" className="flex-1" onClick={() => setIsOpen(false)}>
+                      <Button variant="outline" className="w-full">
+                        Sign In
+                      </Button>
+                    </Link>
+                    <Link to="/auth?mode=signup" className="flex-1" onClick={() => setIsOpen(false)}>
+                      <Button variant="accent" className="w-full">
+                        Get Started
+                      </Button>
+                    </Link>
+                  </>
+                )}
               </div>
             </div>
           </div>
