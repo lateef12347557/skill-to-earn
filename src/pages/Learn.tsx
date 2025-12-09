@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -218,9 +219,11 @@ export default function Learn() {
                             </span>
                           </div>
 
-                          <Button variant="accent" className="w-full gap-2">
-                            Start Learning
-                            <ArrowRight className="h-4 w-4" />
+                          <Button asChild variant="accent" className="w-full gap-2">
+                            <Link to={`/learning-path/${path.id}`}>
+                              Start Learning
+                              <ArrowRight className="h-4 w-4" />
+                            </Link>
                           </Button>
                         </CardContent>
                       </Card>
@@ -260,9 +263,11 @@ export default function Learn() {
 
                           <div className="flex items-center justify-between">
                             <Badge variant="secondary">{path.difficulty || "All levels"}</Badge>
-                            <Button size="sm" variant="ghost" className="gap-1 text-accent hover:text-accent">
-                              Start
-                              <ArrowRight className="h-4 w-4" />
+                            <Button asChild size="sm" variant="ghost" className="gap-1 text-accent hover:text-accent">
+                              <Link to={`/learning-path/${path.id}`}>
+                                Start
+                                <ArrowRight className="h-4 w-4" />
+                              </Link>
                             </Button>
                           </div>
                         </CardContent>

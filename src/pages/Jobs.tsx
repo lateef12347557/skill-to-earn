@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
@@ -228,9 +229,11 @@ export default function Jobs() {
                         <span className="text-xs text-muted-foreground">
                           Posted recently
                         </span>
-                        <Button size="sm" variant="accent" className="gap-1">
-                          Apply
-                          <ArrowRight className="h-4 w-4" />
+                        <Button asChild size="sm" variant="accent" className="gap-1">
+                          <Link to={`/job/${job.id}`}>
+                            Apply
+                            <ArrowRight className="h-4 w-4" />
+                          </Link>
                         </Button>
                       </div>
                     </CardFooter>
