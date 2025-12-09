@@ -11,6 +11,7 @@ import Learn from "./pages/Learn";
 import LearningPath from "./pages/LearningPath";
 import Lesson from "./pages/Lesson";
 import Dashboard from "./pages/Dashboard";
+import EmployerDashboard from "./pages/EmployerDashboard";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
@@ -31,6 +32,7 @@ const App = () => (
             <Route path="/learning-path/:id" element={<LearningPath />} />
             <Route path="/lesson/:id" element={<Lesson />} />
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/employer" element={<EmployerDashboard />} />
             <Route path="/auth" element={<Auth />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
