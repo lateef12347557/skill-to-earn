@@ -9,6 +9,8 @@ import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
+import { CourseLikeButton } from "@/components/course/CourseLikeButton";
+import { CourseReviews } from "@/components/course/CourseReviews";
 import { 
   ArrowLeft, Clock, BookOpen, CheckCircle2, 
   PlayCircle, Lock, Star, Users
@@ -181,13 +183,10 @@ export default function LearningPathPage() {
                 {path.duration_hours ? `${path.duration_hours} hours` : "Self-paced"}
               </span>
               <span className="flex items-center gap-2">
-                <Star className="h-4 w-4 fill-warning text-warning" />
-                4.8 rating
-              </span>
-              <span className="flex items-center gap-2">
                 <Users className="h-4 w-4" />
                 1.2k enrolled
               </span>
+              <CourseLikeButton learningPathId={path.id} />
             </div>
           </div>
 
@@ -306,6 +305,11 @@ export default function LearningPathPage() {
                 </Card>
               );
             })}
+          </div>
+
+          {/* Reviews Section */}
+          <div className="mt-12">
+            <CourseReviews learningPathId={path.id} />
           </div>
         </div>
       </main>

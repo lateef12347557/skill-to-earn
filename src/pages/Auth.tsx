@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Zap, Mail, Lock, ArrowRight, Github, Chrome, User, Briefcase, GraduationCap } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -27,7 +28,22 @@ export default function Auth() {
 
   useEffect(() => {
     if (user) {
-      navigate("/dashboard");
+      // Check user role and redirect accordingly
+      const checkRoleAndRedirect = async () => {
+        const { data } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', user.id)
+          .single();
+        
+        if (data?.role === 'employer') {
+          navigate("/employer/dashboard");
+        } else {
+          navigate("/dashboard");
+        }
+      };
+      
+      checkRoleAndRedirect();
     }
   }, [user, navigate]);
 
