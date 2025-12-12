@@ -3,7 +3,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-api-key',
 };
 
 serve(async (req) => {
@@ -13,6 +13,18 @@ serve(async (req) => {
   }
 
   try {
+    // Validate API key
+    const apiKey = req.headers.get('x-api-key');
+    const expectedApiKey = Deno.env.get('ADMIN_API_KEY');
+
+    if (!apiKey || apiKey !== expectedApiKey) {
+      console.error('Unauthorized: Invalid or missing API key');
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized: Invalid or missing API key' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     
@@ -33,10 +45,27 @@ serve(async (req) => {
     } = body;
 
     // Validate required fields
-    if (!title) {
-      console.error('Missing required field: title');
+    if (!title || typeof title !== 'string' || title.trim().length === 0) {
+      console.error('Missing or invalid required field: title');
       return new Response(
-        JSON.stringify({ error: 'Title is required' }),
+        JSON.stringify({ error: 'Title is required and must be a non-empty string' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Validate difficulty if provided
+    const validDifficulties = ['beginner', 'intermediate', 'advanced'];
+    if (difficulty && !validDifficulties.includes(difficulty)) {
+      return new Response(
+        JSON.stringify({ error: `difficulty must be one of: ${validDifficulties.join(', ')}` }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Validate duration_hours if provided
+    if (duration_hours !== undefined && (typeof duration_hours !== 'number' || duration_hours < 0)) {
+      return new Response(
+        JSON.stringify({ error: 'duration_hours must be a positive number' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -45,11 +74,11 @@ serve(async (req) => {
     const { data: learningPath, error: pathError } = await supabase
       .from('learning_paths')
       .insert({
-        title,
-        description,
+        title: title.trim(),
+        description: description?.trim(),
         image_url,
         difficulty,
-        category,
+        category: category?.trim(),
         duration_hours,
         is_published
       })
@@ -67,16 +96,21 @@ serve(async (req) => {
     console.log('Learning path created successfully:', learningPath.id);
 
     // If lessons are provided, create them
-    if (lessons.length > 0) {
-      const lessonsToInsert = lessons.map((lesson: any, index: number) => ({
-        learning_path_id: learningPath.id,
-        title: lesson.title,
-        description: lesson.description,
-        content: lesson.content,
-        video_url: lesson.video_url,
-        duration_minutes: lesson.duration_minutes,
-        order_index: lesson.order_index ?? index + 1
-      }));
+    if (Array.isArray(lessons) && lessons.length > 0) {
+      const lessonsToInsert = lessons.map((lesson: any, index: number) => {
+        if (!lesson.title || typeof lesson.title !== 'string') {
+          throw new Error(`Lesson at index ${index} must have a valid title`);
+        }
+        return {
+          learning_path_id: learningPath.id,
+          title: lesson.title.trim(),
+          description: lesson.description?.trim(),
+          content: lesson.content?.trim(),
+          video_url: lesson.video_url,
+          duration_minutes: lesson.duration_minutes,
+          order_index: lesson.order_index ?? index + 1
+        };
+      });
 
       const { data: createdLessons, error: lessonsError } = await supabase
         .from('lessons')
@@ -99,10 +133,11 @@ serve(async (req) => {
       { status: 201, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Unexpected error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Internal server error';
     return new Response(
-      JSON.stringify({ error: 'Internal server error' }),
+      JSON.stringify({ error: errorMessage }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
